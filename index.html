@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CARMA Extension — Privacy Policy</title>
+<style>
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:800px;margin:40px auto;padding:0 24px;color:#1a1f2e;line-height:1.7}
+  h1{color:#0A1F3D;border-bottom:2px solid #0A1F3D;padding-bottom:12px}
+  h2{color:#0A1F3D;margin-top:32px}
+  .updated{color:#6b7280;font-size:14px;margin-top:-8px}
+  table{width:100%;border-collapse:collapse;margin:16px 0}
+  th{background:#0A1F3D;color:#fff;padding:10px 14px;text-align:left}
+  td{padding:9px 14px;border-bottom:1px solid #e2e5ea;font-size:14px}
+  tr:last-child td{border:none}
+  .hl{background:#f0f4ff;border-left:4px solid #0A1F3D;padding:12px 16px;margin:16px 0;border-radius:0 6px 6px 0}
+  a{color:#0A1F3D}
+  code{background:#f4f5f7;padding:2px 6px;border-radius:4px;font-size:13px}
+  hr{margin-top:40px;border:none;border-top:1px solid #e2e5ea}
+</style>
+</head>
+<body>
+<h1>CARMA Extension — Privacy Policy</h1>
+<p class="updated">Last updated: March 2026</p>
+<div class="hl"><strong>Summary:</strong> CARMA does not collect, store, or sell any personal data. All data stays on your device or is sent directly to Telegram via your own bot token.</div>
+
+<h2>1. What is CARMA?</h2>
+<p>CARMA is a Chrome extension that analyzes car listings on supported marketplaces (Encar, Mobile.de, Che168, and others), calculates import costs, and helps generate commercial proposals sent via Telegram.</p>
+
+<h2>2. Data We Collect</h2>
+<p>CARMA does <strong>not</strong> collect any personal data on our servers. The extension works locally in your browser.</p>
+<table>
+  <tr><th>Data</th><th>Where stored</th><th>Purpose</th><th>Sent externally?</th></tr>
+  <tr><td>Telegram bot token</td><td>chrome.storage.local (device only)</td><td>Sending messages via your own bot</td><td>To your Cloudflare Worker only</td></tr>
+  <tr><td>Telegram chat IDs</td><td>chrome.storage.local (device only)</td><td>Remembering recipient chats</td><td>To your Cloudflare Worker only</td></tr>
+  <tr><td>Extension settings</td><td>chrome.storage.local (device only)</td><td>User preferences</td><td>No</td></tr>
+  <tr><td>Car listing text</td><td>Memory only, not stored</td><td>AI analysis</td><td>To YandexGPT via your Worker</td></tr>
+  <tr><td>Car photo URLs</td><td>Memory only, not stored</td><td>Sending to Telegram</td><td>To Telegram API via your Worker</td></tr>
+</table>
+
+<h2>3. Third-Party Services</h2>
+<table>
+  <tr><th>Service</th><th>Purpose</th><th>Privacy Policy</th></tr>
+  <tr><td>Cloudflare Workers</td><td>Backend proxy for AI and Telegram</td><td><a href="https://www.cloudflare.com/privacypolicy/" target="_blank">cloudflare.com/privacypolicy</a></td></tr>
+  <tr><td>YandexGPT API</td><td>AI analysis of listing text</td><td><a href="https://yandex.com/legal/confidential/" target="_blank">yandex.com/legal/confidential</a></td></tr>
+  <tr><td>Telegram Bot API</td><td>Sending proposals</td><td><a href="https://telegram.org/privacy" target="_blank">telegram.org/privacy</a></td></tr>
+  <tr><td>open.er-api.com</td><td>Currency exchange rates</td><td><a href="https://www.exchangerate-api.com/terms" target="_blank">exchangerate-api.com/terms</a></td></tr>
+  <tr><td>Google Fonts</td><td>UI typography</td><td><a href="https://policies.google.com/privacy" target="_blank">policies.google.com/privacy</a></td></tr>
+</table>
+
+<h2>4. Permissions Explained</h2>
+<table>
+  <tr><th>Permission</th><th>Why it is needed</th></tr>
+  <tr><td><code>activeTab</code></td><td>To read the current car listing page when you click the icon</td></tr>
+  <tr><td><code>scripting</code></td><td>To inject a content script that parses listing data</td></tr>
+  <tr><td><code>storage</code></td><td>To save settings locally on your device</td></tr>
+  <tr><td><code>tabs</code></td><td>To detect which marketplace you are on and update the icon</td></tr>
+  <tr><td>Host permissions</td><td>To communicate with the worker for AI analysis and currency rates</td></tr>
+</table>
+
+<h2>5. Data Retention</h2>
+<p>All settings are stored in <code>chrome.storage.local</code> on your device only. No data is retained on any server operated by CARMA developers. You can clear all data by resetting settings or removing the extension.</p>
+
+<h2>6. Children's Privacy</h2>
+<p>CARMA is not directed at children under 13 and does not knowingly collect information from children.</p>
+
+<h2>7. Changes to This Policy</h2>
+<p>We may update this policy from time to time. Changes will be reflected by updating the "Last updated" date. Continued use of the extension constitutes acceptance of the updated policy.</p>
+
+<h2>8. Contact</h2>
+<p>If you have questions about this Privacy Policy, please open an issue in the <a href="https://github.com/carma-extension" target="_blank">GitHub repository</a>.</p>
+
+<hr>
+<p style="color:#9ca3af;font-size:13px">CARMA Extension &copy; 2026</p>
+</body>
+</html>
