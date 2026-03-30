@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CARMA — Управление лицензиями</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f4f5f7;color:#1a1f2e;min-height:100vh}
+  .hdr{background:#0A1F3D;padding:16px 24px;display:flex;align-items:center;justify-content:space-between}
+  .hdr-title{color:#fff;font-size:16px;font-weight:800}
+  .hdr-sub{color:rgba(255,255,255,.5);font-size:12px}
+  .auth-screen{max-width:400px;margin:80px auto;background:#fff;border-radius:12px;padding:32px;box-shadow:0 2px 12px rgba(0,0,0,.08);text-align:center}
+  .auth-screen h2{font-size:18px;margin-bottom:8px;color:#0A1F3D}
+  .auth-screen p{font-size:13px;color:#6b7280;margin-bottom:24px}
+  .wrap{max-width:900px;margin:24px auto;padding:0 16px;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .card{background:#fff;border-radius:10px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+  .card-title{font-size:13px;font-weight:800;color:#0A1F3D;margin-bottom:16px;display:flex;align-items:center;gap:7px}
+  .field{margin-bottom:12px}
+  .field label{display:block;font-size:11px;font-weight:700;color:#6b7280;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px}
+  input,select{width:100%;padding:8px 10px;border:1px solid #e2e5ea;border-radius:6px;font-size:13px;font-family:inherit;outline:none;transition:border .15s}
+  input:focus,select:focus{border-color:#0A1F3D}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 16px;border-radius:7px;font-size:13px;font-weight:700;font-family:inherit;border:none;cursor:pointer;transition:opacity .15s;width:100%}
+  .btn:hover{opacity:.85}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .btn-primary{background:#0A1F3D;color:#fff}
+  .btn-danger{background:#dc2626;color:#fff}
+  .btn-outline{background:#fff;color:#0A1F3D;border:1.5px solid #0A1F3D}
+  .result{margin-top:10px;padding:10px 12px;border-radius:6px;font-size:12px;display:none;line-height:1.5}
+  .result.ok{background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0}
+  .result.err{background:#fef2f2;color:#dc2626;border:1px solid #fecaca}
+  .list-wrap{grid-column:1/-1}
+  .list-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:12px}
+  .list-table th{background:#f8f9fb;padding:8px 10px;text-align:left;font-weight:700;color:#6b7280;border-bottom:2px solid #e2e5ea}
+  .list-table td{padding:9px 10px;border-bottom:1px solid #f4f5f7;vertical-align:middle}
+  .list-table tr:last-child td{border:none}
+  .badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700}
+  .badge-ok{background:#dcfce7;color:#15803d}
+  .badge-exp{background:#fee2e2;color:#dc2626}
+  .badge-soon{background:#fef9c3;color:#854d0e}
+  .empty{text-align:center;padding:24px;color:#9ca3af;font-size:13px}
+  .revoke-btn{background:none;border:none;cursor:pointer;color:#dc2626;font-size:11px;font-weight:700;padding:3px 8px;border-radius:4px;border:1px solid #fecaca}
+  .revoke-btn:hover{background:#fef2f2}
+  .stats{display:flex;gap:12px;margin-bottom:16px}
+  .stat{flex:1;background:#f8f9fb;border-radius:7px;padding:12px;text-align:center}
+  .stat-n{font-size:22px;font-weight:800;color:#0A1F3D}
+  .stat-l{font-size:11px;color:#6b7280;margin-top:2px}
+  @media(max-width:600px){.wrap{grid-template-columns:1fr}.list-wrap{grid-column:1}}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div>
+    <div class="hdr-title">CARMA — Управление лицензиями</div>
+    <div class="hdr-sub">Admin Panel</div>
+  </div>
+  <button class="btn btn-outline" style="width:auto;font-size:12px" onclick="logout()">Выйти</button>
+</div>
+
+<!-- Экран входа -->
+<div class="auth-screen" id="authScreen">
+  <div style="font-size:36px;margin-bottom:12px">🔐</div>
+  <h2>Вход в панель</h2>
+  <p>Введите Admin Key для доступа к управлению лицензиями</p>
+  <div class="field">
+    <input type="password" id="adminKeyInput" placeholder="Ваш ADMIN_KEY" onkeydown="if(event.key==='Enter')doLogin()">
+  </div>
+  <button class="btn btn-primary" onclick="doLogin()">Войти</button>
+  <div class="result" id="authResult"></div>
+</div>
+
+<!-- Основной интерфейс -->
+<div id="mainWrap" style="display:none">
+  <div class="wrap">
+
+    <!-- Выдать лицензию -->
+    <div class="card">
+      <div class="card-title">✅ Выдать лицензию</div>
+      <div class="field">
+        <label>Telegram ID</label>
+        <input type="text" id="grantTid" placeholder="123456789">
+      </div>
+      <div class="field">
+        <label>Имя / Username</label>
+        <input type="text" id="grantName" placeholder="ivan_petrov">
+      </div>
+      <div class="field">
+        <label>Тариф</label>
+        <select id="grantPlan">
+          <option value="pro">Pro</option>
+          <option value="trial">Trial</option>
+          <option value="lifetime">Lifetime</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Дней</label>
+        <select id="grantDays">
+          <option value="7">7 дней (тест)</option>
+          <option value="30">30 дней</option>
+          <option value="90">90 дней</option>
+          <option value="365" selected>365 дней (год)</option>
+          <option value="3650">10 лет (lifetime)</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" id="btnGrant" onclick="grantLicense()">✅ Выдать</button>
+      <div class="result" id="grantResult"></div>
+    </div>
+
+    <!-- Отозвать лицензию -->
+    <div class="card">
+      <div class="card-title">⛔ Отозвать лицензию</div>
+      <div class="field">
+        <label>Telegram ID</label>
+        <input type="text" id="revokeTid" placeholder="123456789">
+      </div>
+      <button class="btn btn-danger" id="btnRevoke" onclick="revokeLicense()">⛔ Отозвать</button>
+      <div class="result" id="revokeResult"></div>
+
+      <div style="margin-top:24px;padding-top:16px;border-top:1px solid #f4f5f7">
+        <div class="card-title">🔍 Проверить подписку</div>
+        <div class="field">
+          <label>Telegram ID</label>
+          <input type="text" id="checkTid" placeholder="123456789">
+        </div>
+        <button class="btn btn-outline" id="btnCheck" onclick="checkLicense()">🔍 Проверить</button>
+        <div class="result" id="checkResult"></div>
+      </div>
+    </div>
+
+    <!-- Список всех лицензий -->
+    <div class="card list-wrap">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="card-title" style="margin:0">📋 Все лицензии</div>
+        <button class="btn btn-outline" style="width:auto;font-size:12px;padding:6px 14px" onclick="loadList()">↻ Обновить</button>
+      </div>
+      <div class="stats" id="statsRow" style="display:none"></div>
+      <div id="listContainer"><div class="empty">Нажмите «Обновить» для загрузки</div></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const WORKER = 'https://carma-kp.ivlevroman1973.workers.dev';
+let ADMIN_KEY = '';
+
+function doLogin() {
+  const key = document.getElementById('adminKeyInput').value.trim();
+  if (!key) { showResult('authResult', false, 'Введите Admin Key'); return; }
+  // Проверяем ключ через /admin/list
+  const btn = document.querySelector('#authScreen .btn-primary');
+  btn.disabled = true; btn.textContent = '⏳ Проверяю...';
+  fetch(WORKER + '/admin/list', { headers: { 'X-Admin-Key': key } })
+    .then(r => r.json())
+    .then(d => {
+      if (d.ok !== false) {
+        ADMIN_KEY = key;
+        document.getElementById('authScreen').style.display = 'none';
+        document.getElementById('mainWrap').style.display = 'block';
+        loadList();
+      } else {
+        showResult('authResult', false, 'Неверный Admin Key');
+      }
+    })
+    .catch(() => showResult('authResult', false, 'Ошибка соединения'))
+    .finally(() => { btn.disabled = false; btn.textContent = 'Войти'; });
+}
+
+function logout() {
+  ADMIN_KEY = '';
+  document.getElementById('authScreen').style.display = 'block';
+  document.getElementById('mainWrap').style.display = 'none';
+  document.getElementById('adminKeyInput').value = '';
+}
+
+async function grantLicense() {
+  const tid  = document.getElementById('grantTid').value.trim();
+  const name = document.getElementById('grantName').value.trim();
+  const plan = document.getElementById('grantPlan').value;
+  const days = parseInt(document.getElementById('grantDays').value);
+  if (!tid) { showResult('grantResult', false, 'Введите Telegram ID'); return; }
+  const btn = document.getElementById('btnGrant');
+  btn.disabled = true; btn.textContent = '⏳ Выдаю...';
+  try {
+    const r = await fetch(WORKER + '/admin/grant', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY },
+      body: JSON.stringify({ telegram_id: tid, username: name, plan, days }),
+    });
+    const d = await r.json();
+    if (d.ok) {
+      showResult('grantResult', true, `✅ Выдано! ${name || tid} · ${plan} · до ${d.license.expires}`);
+      document.getElementById('grantTid').value = '';
+      document.getElementById('grantName').value = '';
+      loadList();
+    } else {
+      showResult('grantResult', false, d.error || 'Ошибка');
+    }
+  } catch(e) { showResult('grantResult', false, 'Ошибка: ' + e.message); }
+  finally { btn.disabled = false; btn.textContent = '✅ Выдать'; }
+}
+
+async function revokeLicense() {
+  const tid = document.getElementById('revokeTid').value.trim();
+  if (!tid) { showResult('revokeResult', false, 'Введите Telegram ID'); return; }
+  if (!confirm('Отозвать лицензию у ' + tid + '?')) return;
+  const btn = document.getElementById('btnRevoke');
+  btn.disabled = true; btn.textContent = '⏳ Отзываю...';
+  try {
+    const r = await fetch(WORKER + '/admin/revoke', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY },
+      body: JSON.stringify({ telegram_id: tid }),
+    });
+    const d = await r.json();
+    if (d.ok) {
+      showResult('revokeResult', true, '⛔ Лицензия отозвана у ' + tid);
+      document.getElementById('revokeTid').value = '';
+      loadList();
+    } else {
+      showResult('revokeResult', false, d.error || 'Ошибка');
+    }
+  } catch(e) { showResult('revokeResult', false, 'Ошибка: ' + e.message); }
+  finally { btn.disabled = false; btn.textContent = '⛔ Отозвать'; }
+}
+
+async function checkLicense() {
+  const tid = document.getElementById('checkTid').value.trim();
+  if (!tid) { showResult('checkResult', false, 'Введите Telegram ID'); return; }
+  const btn = document.getElementById('btnCheck');
+  btn.disabled = true; btn.textContent = '⏳ Проверяю...';
+  try {
+    const r = await fetch(WORKER + '/auth/check', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telegramId: tid }),
+    });
+    const d = await r.json();
+    if (d.ok) {
+      showResult('checkResult', true, `✅ Активна · ${d.plan} · до ${d.expires || '∞'}${d.username ? ' · @' + d.username : ''}`);
+    } else {
+      showResult('checkResult', false, '⛔ ' + (d.error || 'Нет лицензии'));
+    }
+  } catch(e) { showResult('checkResult', false, 'Ошибка: ' + e.message); }
+  finally { btn.disabled = false; btn.textContent = '🔍 Проверить'; }
+}
+
+async function loadList() {
+  const container = document.getElementById('listContainer');
+  container.innerHTML = '<div class="empty">⏳ Загружаю...</div>';
+  try {
+    const r = await fetch(WORKER + '/admin/list', { headers: { 'X-Admin-Key': ADMIN_KEY } });
+    const d = await r.json();
+    if (!d.ok && d.error) { container.innerHTML = `<div class="empty">Ошибка: ${d.error}</div>`; return; }
+    const users = d.users || [];
+    if (!users.length) { container.innerHTML = '<div class="empty">Нет активных лицензий</div>'; return; }
+
+    // Статистика
+    const now = new Date();
+    const active  = users.filter(u => !u.expires || new Date(u.expires) > now).length;
+    const expired = users.length - active;
+    const soon    = users.filter(u => {
+      if (!u.expires) return false;
+      const diff = (new Date(u.expires) - now) / 86400000;
+      return diff > 0 && diff <= 7;
+    }).length;
+
+    const statsRow = document.getElementById('statsRow');
+    statsRow.style.display = 'flex';
+    statsRow.innerHTML = `
+      <div class="stat"><div class="stat-n">${users.length}</div><div class="stat-l">Всего</div></div>
+      <div class="stat"><div class="stat-n" style="color:#16a34a">${active}</div><div class="stat-l">Активных</div></div>
+      <div class="stat"><div class="stat-n" style="color:#854d0e">${soon}</div><div class="stat-l">Истекают &lt;7д</div></div>
+      <div class="stat"><div class="stat-n" style="color:#dc2626">${expired}</div><div class="stat-l">Истекших</div></div>
+    `;
+
+    // Таблица
+    const sorted = users.sort((a, b) => new Date(b.created||0) - new Date(a.created||0));
+    container.innerHTML = `
+      <table class="list-table">
+        <thead><tr>
+          <th>Telegram ID</th><th>Username</th><th>Тариф</th>
+          <th>Истекает</th><th>Создан</th><th></th>
+        </tr></thead>
+        <tbody>
+          ${sorted.map(u => {
+            const exp = u.expires ? new Date(u.expires) : null;
+            const diff = exp ? (exp - now) / 86400000 : 999;
+            const badge = !exp ? '<span class="badge badge-ok">∞</span>'
+              : diff < 0   ? '<span class="badge badge-exp">Истекла</span>'
+              : diff <= 7  ? `<span class="badge badge-soon">${Math.ceil(diff)}д</span>`
+              : `<span class="badge badge-ok">${u.expires}</span>`;
+            return `<tr>
+              <td><b>${u.telegram_id}</b></td>
+              <td>${u.username ? '@' + u.username : '—'}</td>
+              <td>${u.plan || 'pro'}</td>
+              <td>${badge}</td>
+              <td style="color:#9ca3af">${u.created || '—'}</td>
+              <td><button class="revoke-btn" onclick="quickRevoke('${u.telegram_id}')">✕ Отозвать</button></td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    `;
+  } catch(e) { container.innerHTML = `<div class="empty">Ошибка: ${e.message}</div>`; }
+}
+
+async function quickRevoke(tid) {
+  if (!confirm('Отозвать лицензию у ' + tid + '?')) return;
+  try {
+    const r = await fetch(WORKER + '/admin/revoke', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY },
+      body: JSON.stringify({ telegram_id: tid }),
+    });
+    const d = await r.json();
+    if (d.ok) loadList();
+  } catch {}
+}
+
+function showResult(id, ok, msg) {
+  const el = document.getElementById(id);
+  el.className = 'result ' + (ok ? 'ok' : 'err');
+  el.textContent = msg;
+  el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 6000);
+}
+
+// Enter в полях
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    if (document.activeElement.id === 'grantTid' || document.activeElement.id === 'grantName') grantLicense();
+    if (document.activeElement.id === 'revokeTid') revokeLicense();
+    if (document.activeElement.id === 'checkTid') checkLicense();
+  }
+});
+</script>
+</body>
+</html>
